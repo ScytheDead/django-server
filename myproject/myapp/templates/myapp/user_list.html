@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    button {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 14px;
+      margin: 5px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    .pagination a {
+      color: #4caf50;
+      padding: 8px 16px;
+      text-decoration: none;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+    }
+
+    .pagination a:hover {
+      background-color: #45a049;
+    }
+
+    .pagination .current {
+      background-color: #4caf50;
+      color: white;
+    }
+  </style>
+
+  <head>
+    <title>User List</title>
+  </head>
+  <body>
+    <h1>User List</h1>
+
+    <button onclick="addUser()">Add User</button>
+
+    <table border="1">
+      <tr>
+        <th>First name</th>
+        <th>Last name</th>
+        <th>Age</th>
+      </tr>
+      {% for user in user_list_data.users.rows %}
+      <tr>
+        <td>{{ user.firstName }}</td>
+        <td>{{ user.lastName }}</td>
+        <td>{{ user.age }}</td>
+        <td>
+          <button onclick="editUser('{{ user.id }}')">Edit</button>
+          <button onclick="deleteUser('{{ user.id }}')">Delete</button>
+          <button onclick="detailUser('{{ user.id }}')">Detail</button>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+
+    <div class="pagination">
+      <div class="pagination">
+        {% for num in page_numbers %}
+            {% if num == users.number %}
+                <span class="current">{{ num }}</span>
+            {% else %}
+                <a href="?page={{ num }}">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  
+
+    <script>
+      function editUser(userId) {
+        window.location.href = `/users/${userId}`;
+      }
+
+      function deleteUser(userId) {
+        const pageRowCount = {{ page_row_count }};
+        const currentPage = {{ current_page }};
+        const apiUrl = `{{api_url}}/${userId}`;
+
+        fetch(apiUrl, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        })
+        .then(response => response.json())
+        .then(result => {
+          if (pageRowCount - 1 < 1) {
+            const previousPage = parseInt(currentPage) - 1;
+            const page = previousPage <= 0 ? 1 : previousPage;
+            return window.location.href = `/users?page=${page}`;
+            
+          }
+
+          window.location.reload();
+        })
+        .catch(error => {
+            console.error('API Error:', error);
+        });
+      }
+
+      function addUser() {
+        window.location.href = '/users/add';
+      }
+
+      function detailUser(userId) {
+        window.location.href = `/users/detail/${userId}`;
+      }
+    </script>
+  </body>
+</html>
